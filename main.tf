@@ -1,5 +1,5 @@
 module "certificate" {
-  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v2.12.0"
+  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v2.9.0"
   tags = var.tags
 
   domain_name = var.r53_hostname
@@ -7,7 +7,7 @@ module "certificate" {
 }
 
 module "cloudfront" {
-  source = "github.com/terraform-aws-modules/terraform-aws-cloudfront?ref=v1.0.0"
+  source = "github.com/Flaconi/terraform-aws-cloudfront?ref=aws-2.x"
   tags    = var.tags
   aliases = [var.r53_hostname]
 
