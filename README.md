@@ -17,7 +17,7 @@ This module will create cdn endpoint with alias and SSL-certificate
 | r53\_zone\_id | Route53 zone ID to be used for hostname and certificate validation | `string` | n/a | yes |
 | s3\_origin\_hostname | Hostname of S3-bucket to be used as origin | `string` | n/a | yes |
 | s3\_logging\_hostname | Hostname of S3-bucket to be used for logging | `string` | `""` | no |
-| tags | Map of custom tags for the provisioned resources | `map` | `{}` | no |
+| tags | Map of custom tags for the provisioned resources | `map(string)` | `{}` | no |
 
 ## Outputs
 

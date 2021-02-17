@@ -21,6 +21,6 @@ variable "r53_zone_id" {
 
 variable "tags" {
   description = "Map of custom tags for the provisioned resources"
-  type        = map
+  type        = map(string)
   default     = {}
 }
