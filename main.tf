@@ -4,6 +4,10 @@ module "certificate" {
 
   domain_name = var.r53_hostname
   zone_id     = var.r53_zone_id
+
+  providers = {
+    aws = aws.us-east-1
+  }
 }
 
 module "cloudfront" {
