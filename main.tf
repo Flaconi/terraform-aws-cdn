@@ -11,7 +11,7 @@ module "certificate" {
 }
 
 module "cloudfront" {
-  source  = "github.com/Flaconi/terraform-aws-cloudfront?ref=aws-2.x"
+  source  = "github.com/Flaconi/terraform-aws-cloudfront?ref=v1.0.1"
   tags    = var.tags
   aliases = [var.r53_hostname]
 
