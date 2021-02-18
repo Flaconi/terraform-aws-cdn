@@ -8,6 +8,11 @@ output "this_cloudfront_arn" {
   value       = module.cloudfront.this_cloudfront_distribution_arn
 }
 
+output "this_cloudfront_id" {
+  description = "ID CloudFront distribution ID"
+  value       = module.cloudfront.this_cloudfront_distribution_id
+}
+
 output "this_cloudfront_hosted_zone_id" {
   description = "Hosted Zone ID CloudFront distribution uses"
   value       = module.cloudfront.this_cloudfront_distribution_hosted_zone_id

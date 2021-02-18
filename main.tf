@@ -4,6 +4,10 @@ module "certificate" {
 
   domain_name = var.r53_hostname
   zone_id     = var.r53_zone_id
+
+  providers = {
+    aws = aws.us-east-1
+  }
 }
 
 module "cloudfront" {
@@ -19,7 +23,7 @@ module "cloudfront" {
 
   create_origin_access_identity = true
   origin_access_identities = {
-    s3_bucket = "My awesome CloudFront can access"
+    s3_bucket = "Access identity for CDN (${var.r53_hostname})"
   }
 
   logging_config = var.s3_logging_hostname == "" ? {} : { bucket = var.s3_logging_hostname }
