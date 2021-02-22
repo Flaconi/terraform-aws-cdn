@@ -37,16 +37,14 @@ module "cloudfront" {
     }
   }
 
-  cache_behavior = {
-    default = {
-      target_origin_id       = "s3_origin"
-      viewer_protocol_policy = "redirect-to-https"
+  default_cache_behavior = {
+    target_origin_id       = "s3_origin"
+    viewer_protocol_policy = "redirect-to-https"
 
-      allowed_methods = ["GET", "HEAD", "OPTIONS"]
-      cached_methods  = ["GET", "HEAD"]
-      compress        = true
-      query_string    = false
-    }
+    allowed_methods = ["GET", "HEAD", "OPTIONS"]
+    cached_methods  = ["GET", "HEAD"]
+    compress        = true
+    query_string    = false
   }
 
   viewer_certificate = {
