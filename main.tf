@@ -1,5 +1,5 @@
 module "certificate" {
-  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v2.9.0"
+  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v2.10.0"
   tags   = var.tags
 
   domain_name = var.r53_hostname
