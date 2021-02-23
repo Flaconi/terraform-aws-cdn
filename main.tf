@@ -1,5 +1,5 @@
 module "certificate" {
-  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v2.9.0"
+  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v2.13.0"
   tags   = var.tags
 
   domain_name = var.r53_hostname
@@ -11,7 +11,7 @@ module "certificate" {
 }
 
 module "cloudfront" {
-  source  = "github.com/Flaconi/terraform-aws-cloudfront?ref=v1.0.1"
+  source  = "github.com/terraform-aws-modules/terraform-aws-cloudfront?ref=v1.5.0"
   tags    = var.tags
   aliases = [var.r53_hostname]
 
@@ -37,16 +37,14 @@ module "cloudfront" {
     }
   }
 
-  cache_behavior = {
-    default = {
-      target_origin_id       = "s3_origin"
-      viewer_protocol_policy = "redirect-to-https"
+  default_cache_behavior = {
+    target_origin_id       = "s3_origin"
+    viewer_protocol_policy = "redirect-to-https"
 
-      allowed_methods = ["GET", "HEAD", "OPTIONS"]
-      cached_methods  = ["GET", "HEAD"]
-      compress        = true
-      query_string    = false
-    }
+    allowed_methods = ["GET", "HEAD", "OPTIONS"]
+    cached_methods  = ["GET", "HEAD"]
+    compress        = true
+    query_string    = false
   }
 
   viewer_certificate = {
