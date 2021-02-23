@@ -7,7 +7,7 @@ This module will create cdn endpoint with alias and SSL-certificate
 
 | Name | Version |
 |------|---------|
-| aws | >= 2.67, < 3.0 |
+| aws | >= 3.0 |
 
 ## Inputs
 
