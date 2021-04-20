@@ -9,8 +9,8 @@ variable "s3_logging_hostname" {
   default     = ""
 }
 
-variable "cdn_domain" {
-  description = "Prefix in s3 bucket base on domain"
+variable "cdn_logging" {
+  description = "Prefix in s3 bucket for cdn logs"
   type        = string
   default     = ""
 }
