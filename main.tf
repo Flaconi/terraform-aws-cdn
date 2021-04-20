@@ -29,7 +29,7 @@ module "cloudfront" {
   logging_config = var.s3_logging_hostname == "" ? {} : {
     bucket          = var.s3_logging_hostname
     include_cookies = false
-    prefix          = "${var.cdn_logging}"
+    prefix          = var.cdn_logging
   }
 
   origin = {
