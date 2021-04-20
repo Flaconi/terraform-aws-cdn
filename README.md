@@ -13,6 +13,7 @@ This module will create cdn endpoint with alias and SSL-certificate
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:-----:|
+| cdn\_logging | Prefix in s3 bucket for cdn logs | `string` | `""` | no |
 | r53\_hostname | Hostname for CloudFront alias | `string` | n/a | yes |
 | r53\_zone\_id | Route53 zone ID to be used for hostname and certificate validation | `string` | n/a | yes |
 | s3\_origin\_hostname | Hostname of S3-bucket to be used as origin | `string` | n/a | yes |
