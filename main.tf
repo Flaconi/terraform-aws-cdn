@@ -26,7 +26,13 @@ module "cloudfront" {
     s3_bucket = "Access identity for CDN (${var.r53_hostname})"
   }
 
-  logging_config = var.s3_logging_hostname == "" ? {} : { bucket = var.s3_logging_hostname }
+  logging_config = [
+    {
+      bucket                = "${var.s3_logging_hostname}"
+      include_cookies       = false
+      prefix                = "${var.cdn_domain}"
+    }
+  ]
 
   origin = {
     s3_origin = {

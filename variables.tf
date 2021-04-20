@@ -9,6 +9,12 @@ variable "s3_logging_hostname" {
   default     = ""
 }
 
+variable "cdn_domain" {
+  description = "Prefix in s3 bucket base on domain"
+  type        = string
+  default     = ""
+}
+
 variable "r53_hostname" {
   description = "Hostname for CloudFront alias"
   type        = string
