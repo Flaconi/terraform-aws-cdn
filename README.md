@@ -3,16 +3,23 @@
 This module will create cdn endpoint with alias and SSL-certificate
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+## Requirements
+
+| Name | Version |
+|------|---------|
+| terraform | >= 0.12.26 |
+| aws | >= 3 |
+
 ## Providers
 
 | Name | Version |
 |------|---------|
-| aws | >= 3.0 |
+| aws | >= 3 |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:-----:|
+|------|-------------|------|---------|:--------:|
 | r53\_hostname | Hostname for CloudFront alias | `string` | n/a | yes |
 | r53\_zone\_id | Route53 zone ID to be used for hostname and certificate validation | `string` | n/a | yes |
 | s3\_origin\_hostname | Hostname of S3-bucket to be used as origin | `string` | n/a | yes |
@@ -24,10 +31,10 @@ This module will create cdn endpoint with alias and SSL-certificate
 
 | Name | Description |
 |------|-------------|
-| this\_certificate\_arn | ARN of ACM SSL certificate created for CloudFront |
-| this\_cloudfront\_alias | Alias hostname of CloudFront distribution |
-| this\_cloudfront\_arn | ARN of CloudFront distribution creates |
-| this\_cloudfront\_hosted\_zone\_id | Hosted Zone ID CloudFront distribution uses |
-| this\_cloudfront\_id | ID CloudFront distribution ID |
+| certificate\_arn | ARN of ACM SSL certificate created for CloudFront |
+| cloudfront\_alias | Alias hostname of CloudFront distribution |
+| cloudfront\_arn | ARN of CloudFront distribution creates |
+| cloudfront\_hosted\_zone\_id | Hosted Zone ID CloudFront distribution uses |
+| cloudfront\_id | ID CloudFront distribution ID |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

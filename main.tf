@@ -1,5 +1,5 @@
 module "certificate" {
-  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v2.13.0"
+  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v3.2.0"
   tags   = var.tags
 
   domain_name = var.r53_hostname
@@ -11,7 +11,7 @@ module "certificate" {
 }
 
 module "cloudfront" {
-  source  = "github.com/terraform-aws-modules/terraform-aws-cloudfront?ref=v1.5.0"
+  source  = "github.com/terraform-aws-modules/terraform-aws-cloudfront?ref=v2.7.0"
   tags    = var.tags
   aliases = [var.r53_hostname]
 
@@ -52,7 +52,7 @@ module "cloudfront" {
   }
 
   viewer_certificate = {
-    acm_certificate_arn = module.certificate.this_acm_certificate_arn
+    acm_certificate_arn = module.certificate.acm_certificate_arn
     ssl_support_method  = "sni-only"
   }
 }
@@ -63,8 +63,8 @@ resource "aws_route53_record" "this" {
   type    = "A"
 
   alias {
-    zone_id = module.cloudfront.this_cloudfront_distribution_hosted_zone_id
-    name    = module.cloudfront.this_cloudfront_distribution_domain_name
+    zone_id = module.cloudfront.cloudfront_distribution_hosted_zone_id
+    name    = module.cloudfront.cloudfront_distribution_domain_name
 
     evaluate_target_health = false
   }
