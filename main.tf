@@ -1,3 +1,28 @@
+locals {
+  origin_hostname_options = {
+    use_host = var.s3_origin_hostname != "" ? var.s3_origin_hostname : null
+    use_name = var.s3_origin_name != "" ? data.aws_s3_bucket.s3_origin[0].bucket_domain_name : null
+  }
+
+  origin_hostname        = local.origin_hostname_options[var.s3_origin_name != "" ? "use_name" : "use_host"]
+  override_origin_policy = var.override_s3_origin_policy && var.s3_origin_name != ""
+}
+
+# Workaround for the input variable validation
+resource "null_resource" "either_s3_origin_hostname_or_s3_origin_name_is_required" {
+  count = !(var.s3_origin_hostname == "" && var.s3_origin_name == "") ? 0 : "Either s3_origin_hostname or s3_origin_name is required"
+}
+
+# Workaround for the input variable validation
+resource "null_resource" "s3_origin_name_is_required_to_override_the_s3_origin_policy" {
+  count = !(var.override_s3_origin_policy && var.s3_origin_name == "") ? 0 : "s3_origin_name is required to override the origin bucket policy"
+}
+
+data "aws_s3_bucket" "s3_origin" {
+  count  = var.s3_origin_name != "" ? 1 : 0
+  bucket = var.s3_origin_name
+}
+
 module "certificate" {
   source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v3.2.0"
   tags   = var.tags
@@ -34,7 +59,7 @@ module "cloudfront" {
 
   origin = {
     s3_origin = {
-      domain_name = var.s3_origin_hostname
+      domain_name = local.origin_hostname
       s3_origin_config = {
         origin_access_identity = "s3_bucket"
       }
@@ -55,6 +80,27 @@ module "cloudfront" {
     acm_certificate_arn = module.certificate.acm_certificate_arn
     ssl_support_method  = "sni-only"
   }
+}
+
+data "aws_iam_policy_document" "oai_policy" {
+  count = local.override_origin_policy ? 1 : 0
+
+  statement {
+    actions   = ["s3:GetObject"]
+    resources = ["${data.aws_s3_bucket.s3_origin[0].arn}${var.s3_origin_policy_restrict_access}"]
+
+    principals {
+      type        = "AWS"
+      identifiers = [element(module.cloudfront.cloudfront_origin_access_identity_iam_arns, 0)]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "s3_origin_policy" {
+  count = local.override_origin_policy ? 1 : 0
+
+  bucket = data.aws_s3_bucket.s3_origin[0].id
+  policy = data.aws_iam_policy_document.oai_policy[0].json
 }
 
 resource "aws_route53_record" "this" {
