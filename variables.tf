@@ -49,3 +49,33 @@ variable "s3_origin_policy_restrict_access" {
   type        = string
   default     = "/*"
 }
+
+variable "cf_functions" {
+  description = <<EOT
+  The Cloud Front function configuration
+  *type:*
+    Allowed cf event types are viewer-request and viewer-response
+  *name:*
+    Name of the function
+  *comment:*
+    Description of the function
+  *code:*
+    Source code of the function
+  *assign:*
+    true for associating the function with the cf distribution,
+    false to remove the association. (to remove the cf function firstly set it
+    to false to dissociate from the cf distribution)
+  EOT
+  type = list(object({
+    type    = string
+    name    = string
+    comment = string
+    code    = string
+    assign  = bool
+  }))
+  default = []
+  validation {
+    condition     = alltrue([for func in var.cf_functions : contains(["viewer-request", "viewer-response"], func.type)])
+    error_message = "Only the following event types are allowed: viewer-request, viewer-response."
+  }
+}
