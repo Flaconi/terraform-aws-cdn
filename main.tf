@@ -6,6 +6,8 @@ locals {
 
   origin_hostname        = local.origin_hostname_options[var.s3_origin_name != "" ? "use_name" : "use_host"]
   override_origin_policy = var.override_s3_origin_policy && var.s3_origin_name != ""
+
+  function_association = { for type, func in var.cf_functions : type => { function_arn = aws_cloudfront_function.functions[type].arn } if func.assign }
 }
 
 # Workaround for the input variable validation
@@ -70,10 +72,12 @@ module "cloudfront" {
     target_origin_id       = "s3_origin"
     viewer_protocol_policy = "redirect-to-https"
 
-    allowed_methods = ["GET", "HEAD", "OPTIONS"]
-    cached_methods  = ["GET", "HEAD"]
-    compress        = true
-    query_string    = false
+    allowed_methods      = ["GET", "HEAD", "OPTIONS"]
+    cached_methods       = ["GET", "HEAD"]
+    compress             = true
+    query_string         = false
+    function_association = local.function_association
+
   }
 
   viewer_certificate = {
@@ -114,4 +118,14 @@ resource "aws_route53_record" "this" {
 
     evaluate_target_health = false
   }
+}
+
+resource "aws_cloudfront_function" "functions" {
+  for_each = var.cf_functions
+
+  name    = each.value.name
+  runtime = "cloudfront-js-1.0"
+  comment = each.value.comment
+  publish = true
+  code    = each.value.code
 }
