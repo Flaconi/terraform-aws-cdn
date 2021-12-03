@@ -7,7 +7,7 @@ locals {
   origin_hostname        = local.origin_hostname_options[var.s3_origin_name != "" ? "use_name" : "use_host"]
   override_origin_policy = var.override_s3_origin_policy && var.s3_origin_name != ""
 
-  function_association = { for idx, item in var.cf_functions : item.type => { function_arn = aws_cloudfront_function.functions[idx].arn } if item.assign }
+  function_association = { for type, func in var.cf_functions : type => { function_arn = aws_cloudfront_function.functions[type].arn } if func.assign }
 }
 
 # Workaround for the input variable validation
@@ -121,11 +121,11 @@ resource "aws_route53_record" "this" {
 }
 
 resource "aws_cloudfront_function" "functions" {
-  count = length(var.cf_functions)
+  for_each = var.cf_functions
 
-  name    = var.cf_functions[count.index].name
+  name    = each.value.name
   runtime = "cloudfront-js-1.0"
-  comment = var.cf_functions[count.index].comment
+  comment = each.value.comment
   publish = true
-  code    = var.cf_functions[count.index].code
+  code    = each.value.code
 }
