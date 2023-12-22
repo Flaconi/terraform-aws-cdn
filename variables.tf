@@ -85,3 +85,15 @@ variable "default_root_object" {
   type        = string
   default     = null
 }
+
+variable "create_origin_access_identity" {
+  description = "Controls if CloudFront origin access identity should be created"
+  type        = bool
+  default     = true
+}
+
+variable "create_origin_access_control" {
+  description = "Controls if CloudFront origin access control should be created"
+  type        = bool
+  default     = false
+}
