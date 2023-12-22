@@ -39,6 +39,7 @@ locals {
     }
   }) : tomap({})
 
+  target_origin_id = var.create_origin_access_control ? "s3_origin_oac" : "s3_origin"
 }
 
 # Workaround for the input variable validation
@@ -96,7 +97,7 @@ module "cloudfront" {
 
   origin = merge(local.origin_oai, local.origin_oac)
   default_cache_behavior = {
-    target_origin_id       = "s3_origin"
+    target_origin_id       = local.target_origin_id
     viewer_protocol_policy = "redirect-to-https"
 
     allowed_methods      = ["GET", "HEAD", "OPTIONS"]
