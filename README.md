@@ -7,22 +7,22 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.26 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.1 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.29 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.29 |
 | <a name="provider_null"></a> [null](#provider\_null) | n/a |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_certificate"></a> [certificate](#module\_certificate) | github.com/terraform-aws-modules/terraform-aws-acm | v3.2.0 |
-| <a name="module_cloudfront"></a> [cloudfront](#module\_cloudfront) | github.com/terraform-aws-modules/terraform-aws-cloudfront | v2.7.0 |
+| <a name="module_certificate"></a> [certificate](#module\_certificate) | github.com/terraform-aws-modules/terraform-aws-acm | v5.0.0 |
+| <a name="module_cloudfront"></a> [cloudfront](#module\_cloudfront) | github.com/terraform-aws-modules/terraform-aws-cloudfront | v3.2.1 |
 
 ## Resources
 
@@ -33,6 +33,7 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 | [aws_s3_bucket_policy.s3_origin_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [null_resource.either_s3_origin_hostname_or_s3_origin_name_is_required](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
 | [null_resource.s3_origin_name_is_required_to_override_the_s3_origin_policy](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
+| [aws_iam_policy_document.oac_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.oai_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_s3_bucket.s3_origin](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/s3_bucket) | data source |
 
@@ -44,6 +45,8 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 | <a name="input_r53_zone_id"></a> [r53\_zone\_id](#input\_r53\_zone\_id) | Route53 zone ID to be used for hostname and certificate validation | `string` | n/a | yes |
 | <a name="input_cdn_logging"></a> [cdn\_logging](#input\_cdn\_logging) | Prefix in s3 bucket for cdn logs | `string` | `""` | no |
 | <a name="input_cf_functions"></a> [cf\_functions](#input\_cf\_functions) | The Cloud Front function configuration<br>    {type = object{}} ie. {"viewer-request" = object{}}<br>  *type:*<br>    Allowed cf event types are viewer-request and viewer-response<br>  *name:*<br>    Name of the function<br>  *comment:*<br>    Description of the function<br>  *code:*<br>    Source code of the function<br>  *assign:*<br>    true for associating the function with the cf distribution,<br>    false to remove the association. (to remove the cf function firstly set it<br>    to false to dissociate from the cf distribution) | <pre>map(object({<br>    name    = string<br>    comment = string<br>    code    = string<br>    assign  = bool<br>  }))</pre> | `{}` | no |
+| <a name="input_create_origin_access_control"></a> [create\_origin\_access\_control](#input\_create\_origin\_access\_control) | Controls if CloudFront origin access control should be created | `bool` | `false` | no |
+| <a name="input_create_origin_access_identity"></a> [create\_origin\_access\_identity](#input\_create\_origin\_access\_identity) | Controls if CloudFront origin access identity should be created | `bool` | `true` | no |
 | <a name="input_default_root_object"></a> [default\_root\_object](#input\_default\_root\_object) | The object that you want CloudFront to return (for example, index.html) when an end user requests the root URL. | `string` | `null` | no |
 | <a name="input_override_s3_origin_policy"></a> [override\_s3\_origin\_policy](#input\_override\_s3\_origin\_policy) | Overrides the S3-bucket policy to set OAI | `bool` | `false` | no |
 | <a name="input_s3_logging_hostname"></a> [s3\_logging\_hostname](#input\_s3\_logging\_hostname) | Hostname of S3-bucket to be used for logging | `string` | `""` | no |
