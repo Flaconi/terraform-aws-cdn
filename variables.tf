@@ -79,3 +79,9 @@ variable "cf_functions" {
     error_message = "Only the following event types are allowed: viewer-request, viewer-response."
   }
 }
+
+variable "default_root_object" {
+  description = "The object that you want CloudFront to return (for example, index.html) when an end user requests the root URL."
+  type        = string
+  default     = null
+}
