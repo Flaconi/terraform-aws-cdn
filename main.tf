@@ -48,6 +48,8 @@ module "cloudfront" {
   retain_on_delete    = false
   wait_for_deployment = false
 
+  default_root_object = var.default_root_object
+
   create_origin_access_identity = true
   origin_access_identities = {
     s3_bucket = "Access identity for CDN (${var.r53_hostname})"
