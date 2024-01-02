@@ -65,6 +65,7 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 |------|-------------|
 | <a name="output_certificate_arn"></a> [certificate\_arn](#output\_certificate\_arn) | ARN of ACM SSL certificate created for CloudFront |
 | <a name="output_cloudfront_alias"></a> [cloudfront\_alias](#output\_cloudfront\_alias) | Alias hostname of CloudFront distribution |
+| <a name="output_cloudfront_alias_additional_zones"></a> [cloudfront\_alias\_additional\_zones](#output\_cloudfront\_alias\_additional\_zones) | Alias hostname of CloudFront distribution for additional zones |
 | <a name="output_cloudfront_arn"></a> [cloudfront\_arn](#output\_cloudfront\_arn) | ARN of CloudFront distribution creates |
 | <a name="output_cloudfront_hosted_zone_id"></a> [cloudfront\_hosted\_zone\_id](#output\_cloudfront\_hosted\_zone\_id) | Hosted Zone ID CloudFront distribution uses |
 | <a name="output_cloudfront_id"></a> [cloudfront\_id](#output\_cloudfront\_id) | ID CloudFront distribution ID |
