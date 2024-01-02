@@ -22,6 +22,7 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_certificate"></a> [certificate](#module\_certificate) | github.com/terraform-aws-modules/terraform-aws-acm | v5.0.0 |
+| <a name="module_certificate-validations"></a> [certificate-validations](#module\_certificate-validations) | github.com/terraform-aws-modules/terraform-aws-acm | v5.0.0 |
 | <a name="module_cloudfront"></a> [cloudfront](#module\_cloudfront) | github.com/terraform-aws-modules/terraform-aws-cloudfront | v3.2.1 |
 
 ## Resources
@@ -29,6 +30,7 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 | Name | Type |
 |------|------|
 | [aws_cloudfront_function.functions](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_function) | resource |
+| [aws_route53_record.additional_records](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_record.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_s3_bucket_policy.s3_origin_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [null_resource.either_s3_origin_hostname_or_s3_origin_name_is_required](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
@@ -43,8 +45,10 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 |------|-------------|------|---------|:--------:|
 | <a name="input_r53_hostname"></a> [r53\_hostname](#input\_r53\_hostname) | Hostname for CloudFront alias | `string` | n/a | yes |
 | <a name="input_r53_zone_id"></a> [r53\_zone\_id](#input\_r53\_zone\_id) | Route53 zone ID to be used for hostname and certificate validation | `string` | n/a | yes |
+| <a name="input_additional_zones"></a> [additional\_zones](#input\_additional\_zones) | Map containing the Route53 Zone IDs and hostnames for additional domains | <pre>map(object({<br>    zone_id  = string<br>    hostname = string<br>  }))</pre> | `{}` | no |
 | <a name="input_cdn_logging"></a> [cdn\_logging](#input\_cdn\_logging) | Prefix in s3 bucket for cdn logs | `string` | `""` | no |
 | <a name="input_cf_functions"></a> [cf\_functions](#input\_cf\_functions) | The Cloud Front function configuration<br>    {type = object{}} ie. {"viewer-request" = object{}}<br>  *type:*<br>    Allowed cf event types are viewer-request and viewer-response<br>  *name:*<br>    Name of the function<br>  *comment:*<br>    Description of the function<br>  *code:*<br>    Source code of the function<br>  *assign:*<br>    true for associating the function with the cf distribution,<br>    false to remove the association. (to remove the cf function firstly set it<br>    to false to dissociate from the cf distribution) | <pre>map(object({<br>    name    = string<br>    comment = string<br>    code    = string<br>    assign  = bool<br>  }))</pre> | `{}` | no |
+| <a name="input_create"></a> [create](#input\_create) | Whether to create the resources | `bool` | `true` | no |
 | <a name="input_create_origin_access_control"></a> [create\_origin\_access\_control](#input\_create\_origin\_access\_control) | Controls if CloudFront origin access control should be created | `bool` | `false` | no |
 | <a name="input_create_origin_access_identity"></a> [create\_origin\_access\_identity](#input\_create\_origin\_access\_identity) | Controls if CloudFront origin access identity should be created | `bool` | `true` | no |
 | <a name="input_default_root_object"></a> [default\_root\_object](#input\_default\_root\_object) | The object that you want CloudFront to return (for example, index.html) when an end user requests the root URL. | `string` | `null` | no |

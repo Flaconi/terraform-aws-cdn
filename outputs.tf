@@ -20,5 +20,5 @@ output "cloudfront_hosted_zone_id" {
 
 output "cloudfront_alias" {
   description = "Alias hostname of CloudFront distribution"
-  value       = aws_route53_record.this.fqdn
+  value       = try(aws_route53_record.this[0].fqdn, null)
 }

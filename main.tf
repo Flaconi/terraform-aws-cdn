@@ -1,3 +1,13 @@
+moved {
+  from = module.certificate.aws_route53_record.validation[0]
+  to   = module.certificate-validations["single"].aws_route53_record.validation[0]
+}
+
+moved {
+  from = aws_route53_record.this
+  to   = aws_route53_record.this[0]
+}
+
 locals {
   origin_hostname_options = {
     use_host = var.s3_origin_hostname != "" ? var.s3_origin_hostname : null
@@ -5,7 +15,7 @@ locals {
   }
 
   origin_hostname        = local.origin_hostname_options[var.s3_origin_name != "" ? "use_name" : "use_host"]
-  override_origin_policy = var.override_s3_origin_policy && var.s3_origin_name != ""
+  override_origin_policy = var.override_s3_origin_policy && var.s3_origin_name != "" && var.create
 
   function_association = { for type, func in var.cf_functions : type => { function_arn = aws_cloudfront_function.functions[type].arn } if func.assign }
 
@@ -33,13 +43,18 @@ locals {
     }
   }) : tomap({})
   origin_oac = var.create_origin_access_control ? tomap({
-    s3_origin = {
+    s3_origin_oac = {
       domain_name           = data.aws_s3_bucket.s3_origin[0].bucket_domain_name
       origin_access_control = local.oac_key
     }
   }) : tomap({})
 
-  target_origin_id = var.create_origin_access_control ? "s3_origin_oac" : "s3_origin"
+  r53_map = merge(tomap({
+    single = {
+      zone_id  = var.r53_zone_id
+      hostname = var.r53_hostname
+    }
+  }), var.additional_zones)
 }
 
 # Workaround for the input variable validation
@@ -59,12 +74,32 @@ data "aws_s3_bucket" "s3_origin" {
 
 module "certificate" {
   source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.0.0"
-  tags   = var.tags
+  #for_each = local.r53_map
+  tags = var.tags
 
-  domain_name       = var.r53_hostname
-  zone_id           = var.r53_zone_id
+  domain_name               = local.r53_map["single"].hostname
+  zone_id                   = local.r53_map["single"].zone_id
+  validation_method         = "DNS"
+  subject_alternative_names = [for s in values(local.r53_map) : s.hostname]
+  create_route53_records    = false
+  create_certificate        = var.create
+  providers = {
+    aws = aws.us-east-1
+  }
+}
+
+module "certificate-validations" {
+  source   = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.0.0"
+  for_each = local.r53_map
+  tags     = var.tags
+
+  domain_name       = each.value.hostname
+  zone_id           = each.value.zone_id
   validation_method = "DNS"
-
+  #subject_alternative_names = [for k,s in values(var.r53_zone_hostname_map) : s.hostname if k > 0]
+  create_route53_records_only               = true && var.create
+  create_certificate                        = false
+  acm_certificate_domain_validation_options = [for s in module.certificate.acm_certificate_domain_validation_options : s if s.domain_name == each.value.hostname]
   providers = {
     aws = aws.us-east-1
   }
@@ -73,13 +108,15 @@ module "certificate" {
 module "cloudfront" {
   source  = "github.com/terraform-aws-modules/terraform-aws-cloudfront?ref=v3.2.1"
   tags    = var.tags
-  aliases = [var.r53_hostname]
+  aliases = [for s in values(local.r53_map) : s.hostname]
 
   enabled             = true
   is_ipv6_enabled     = true
   price_class         = "PriceClass_100"
   retain_on_delete    = false
   wait_for_deployment = false
+
+  create_distribution = var.create
 
   default_root_object = var.default_root_object
 
@@ -97,7 +134,7 @@ module "cloudfront" {
 
   origin = merge(local.origin_oai, local.origin_oac)
   default_cache_behavior = {
-    target_origin_id       = local.target_origin_id
+    target_origin_id       = "s3_origin_oac"
     viewer_protocol_policy = "redirect-to-https"
 
     allowed_methods      = ["GET", "HEAD", "OPTIONS"]
@@ -156,8 +193,25 @@ resource "aws_s3_bucket_policy" "s3_origin_policy" {
 }
 
 resource "aws_route53_record" "this" {
+  count = var.create ? 1 : 0
+
   zone_id = var.r53_zone_id
   name    = var.r53_hostname
+  type    = "A"
+
+  alias {
+    zone_id = module.cloudfront.cloudfront_distribution_hosted_zone_id
+    name    = module.cloudfront.cloudfront_distribution_domain_name
+
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "additional_records" {
+  for_each = var.additional_zones
+
+  zone_id = each.value.zone_id
+  name    = each.value.hostname
   type    = "A"
 
   alias {
