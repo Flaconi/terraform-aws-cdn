@@ -22,3 +22,8 @@ output "cloudfront_alias" {
   description = "Alias hostname of CloudFront distribution"
   value       = try(aws_route53_record.this[0].fqdn, null)
 }
+
+output "cloudfront_alias_additional_zones" {
+  description = "Alias hostname of CloudFront distribution for additional zones"
+  value       = { for k, v in aws_route53_record.additional_records : k => v.fqdn }
+}
