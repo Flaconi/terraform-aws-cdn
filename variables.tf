@@ -97,3 +97,18 @@ variable "create_origin_access_control" {
   type        = bool
   default     = false
 }
+
+variable "additional_zones" {
+  description = "Map containing the Route53 Zone IDs and hostnames for additional domains"
+  type = map(object({
+    zone_id  = string
+    hostname = string
+  }))
+  default = {}
+}
+
+variable "create" {
+  description = "Whether to create the resources"
+  type        = bool
+  default     = true
+}
