@@ -112,3 +112,9 @@ variable "create" {
   type        = bool
   default     = true
 }
+
+variable "validation_timeout" {
+  description = "Define maximum timeout to wait for the validation to complete"
+  type        = string
+  default     = null
+}
