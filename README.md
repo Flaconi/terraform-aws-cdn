@@ -15,6 +15,7 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 | Name | Version |
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.29 |
+| <a name="provider_aws.us-east-1"></a> [aws.us-east-1](#provider\_aws.us-east-1) | >= 4.29 |
 | <a name="provider_null"></a> [null](#provider\_null) | n/a |
 
 ## Modules

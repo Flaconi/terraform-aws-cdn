@@ -237,6 +237,8 @@ resource "aws_acm_certificate_validation" "this" {
   timeouts {
     create = var.validation_timeout
   }
+
+  provider = aws.us-east-1
 }
 
 resource "aws_cloudfront_function" "functions" {
