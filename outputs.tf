@@ -1,6 +1,6 @@
 output "certificate_arn" {
   description = "ARN of ACM SSL certificate created for CloudFront"
-  value       = module.certificate.acm_certificate_arn
+  value       = aws_acm_certificate_validation.this.certificate_arn
 }
 
 output "cloudfront_arn" {

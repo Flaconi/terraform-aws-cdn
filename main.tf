@@ -8,6 +8,11 @@ moved {
   to   = aws_route53_record.this[0]
 }
 
+moved {
+  from = module.certificate.aws_acm_certificate_validation.this[0]
+  to   = aws_acm_certificate_validation.this
+}
+
 locals {
   origin_hostname_options = {
     use_host = var.s3_origin_hostname != "" ? var.s3_origin_hostname : null
@@ -73,9 +78,8 @@ data "aws_s3_bucket" "s3_origin" {
 }
 
 module "certificate" {
-  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.0.0"
-  #for_each = local.r53_map
-  tags = var.tags
+  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.0.1"
+  tags   = var.tags
 
   domain_name               = local.r53_map["single"].hostname
   zone_id                   = local.r53_map["single"].zone_id
@@ -83,22 +87,23 @@ module "certificate" {
   subject_alternative_names = [for s in values(local.r53_map) : s.hostname]
   create_route53_records    = false
   create_certificate        = var.create
+  validate_certificate      = false
   providers = {
     aws = aws.us-east-1
   }
 }
 
 module "certificate-validations" {
-  source   = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.0.0"
+  source   = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.0.1"
   for_each = local.r53_map
   tags     = var.tags
 
-  domain_name       = each.value.hostname
-  zone_id           = each.value.zone_id
-  validation_method = "DNS"
-  #subject_alternative_names = [for k,s in values(var.r53_zone_hostname_map) : s.hostname if k > 0]
+  domain_name                               = each.value.hostname
+  zone_id                                   = each.value.zone_id
+  validation_method                         = "DNS"
   create_route53_records_only               = true && var.create
   create_certificate                        = false
+  validate_certificate                      = false
   acm_certificate_domain_validation_options = [for s in module.certificate.acm_certificate_domain_validation_options : s if s.domain_name == each.value.hostname]
   providers = {
     aws = aws.us-east-1
@@ -106,7 +111,7 @@ module "certificate-validations" {
 }
 
 module "cloudfront" {
-  source  = "github.com/terraform-aws-modules/terraform-aws-cloudfront?ref=v3.2.1"
+  source  = "github.com/terraform-aws-modules/terraform-aws-cloudfront?ref=v3.4.0"
   tags    = var.tags
   aliases = [for s in values(local.r53_map) : s.hostname]
 
@@ -134,7 +139,7 @@ module "cloudfront" {
 
   origin = merge(local.origin_oai, local.origin_oac)
   default_cache_behavior = {
-    target_origin_id       = "s3_origin_oac"
+    target_origin_id       = keys(merge(local.origin_oai, local.origin_oac))[0]
     viewer_protocol_policy = "redirect-to-https"
 
     allowed_methods      = ["GET", "HEAD", "OPTIONS"]
@@ -219,6 +224,18 @@ resource "aws_route53_record" "additional_records" {
     name    = module.cloudfront.cloudfront_distribution_domain_name
 
     evaluate_target_health = false
+  }
+}
+
+resource "aws_acm_certificate_validation" "this" {
+  certificate_arn = module.certificate.acm_certificate_arn
+
+  validation_record_fqdns = flatten([
+    for val in module.certificate-validations : val.validation_route53_record_fqdns
+  ])
+
+  timeouts {
+    create = var.validation_timeout
   }
 }
 

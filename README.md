@@ -21,14 +21,15 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_certificate"></a> [certificate](#module\_certificate) | github.com/terraform-aws-modules/terraform-aws-acm | v5.0.0 |
-| <a name="module_certificate-validations"></a> [certificate-validations](#module\_certificate-validations) | github.com/terraform-aws-modules/terraform-aws-acm | v5.0.0 |
-| <a name="module_cloudfront"></a> [cloudfront](#module\_cloudfront) | github.com/terraform-aws-modules/terraform-aws-cloudfront | v3.2.1 |
+| <a name="module_certificate"></a> [certificate](#module\_certificate) | github.com/terraform-aws-modules/terraform-aws-acm | v5.0.1 |
+| <a name="module_certificate-validations"></a> [certificate-validations](#module\_certificate-validations) | github.com/terraform-aws-modules/terraform-aws-acm | v5.0.1 |
+| <a name="module_cloudfront"></a> [cloudfront](#module\_cloudfront) | github.com/terraform-aws-modules/terraform-aws-cloudfront | v3.4.0 |
 
 ## Resources
 
 | Name | Type |
 |------|------|
+| [aws_acm_certificate_validation.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation) | resource |
 | [aws_cloudfront_function.functions](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_function) | resource |
 | [aws_route53_record.additional_records](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_record.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
@@ -58,6 +59,7 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 | <a name="input_s3_origin_name"></a> [s3\_origin\_name](#input\_s3\_origin\_name) | Name of S3-bucket to be used as origin | `string` | `""` | no |
 | <a name="input_s3_origin_policy_restrict_access"></a> [s3\_origin\_policy\_restrict\_access](#input\_s3\_origin\_policy\_restrict\_access) | Folder/files to add as an condition to the S3-bucket policy resource | `string` | `"/*"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Map of custom tags for the provisioned resources | `map(string)` | `{}` | no |
+| <a name="input_validation_timeout"></a> [validation\_timeout](#input\_validation\_timeout) | Define maximum timeout to wait for the validation to complete | `string` | `null` | no |
 
 ## Outputs
 
