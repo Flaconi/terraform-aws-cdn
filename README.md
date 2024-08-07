@@ -33,6 +33,7 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 | [aws_acm_certificate_validation.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation) | resource |
 | [aws_cloudfront_function.functions](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_function) | resource |
 | [aws_route53_record.additional_records](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
+| [aws_route53_record.ipv6](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_record.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_s3_bucket_policy.s3_origin_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_policy) | resource |
 | [null_resource.either_s3_origin_hostname_or_s3_origin_name_is_required](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
@@ -54,6 +55,8 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 | <a name="input_create_origin_access_control"></a> [create\_origin\_access\_control](#input\_create\_origin\_access\_control) | Controls if CloudFront origin access control should be created | `bool` | `false` | no |
 | <a name="input_create_origin_access_identity"></a> [create\_origin\_access\_identity](#input\_create\_origin\_access\_identity) | Controls if CloudFront origin access identity should be created | `bool` | `true` | no |
 | <a name="input_default_root_object"></a> [default\_root\_object](#input\_default\_root\_object) | The object that you want CloudFront to return (for example, index.html) when an end user requests the root URL. | `string` | `null` | no |
+| <a name="input_dns_ttl"></a> [dns\_ttl](#input\_dns\_ttl) | dns ttl for the cert validation records | `number` | `60` | no |
+| <a name="input_ipv6"></a> [ipv6](#input\_ipv6) | create also alias records for ipv6 | `bool` | `false` | no |
 | <a name="input_override_s3_origin_policy"></a> [override\_s3\_origin\_policy](#input\_override\_s3\_origin\_policy) | Overrides the S3-bucket policy to set OAI | `bool` | `false` | no |
 | <a name="input_s3_logging_hostname"></a> [s3\_logging\_hostname](#input\_s3\_logging\_hostname) | Hostname of S3-bucket to be used for logging | `string` | `""` | no |
 | <a name="input_s3_origin_hostname"></a> [s3\_origin\_hostname](#input\_s3\_origin\_hostname) | Hostname of S3-bucket to be used as origin | `string` | `""` | no |

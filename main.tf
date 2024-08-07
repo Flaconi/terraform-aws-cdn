@@ -79,7 +79,7 @@ data "aws_s3_bucket" "s3_origin" {
 
 module "certificate" {
   source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.0.1"
-  tags   = var.tags
+  tags   = merge(var.tags, { Region = "us-east-1" })
 
   domain_name               = local.r53_map["single"].hostname
   zone_id                   = local.r53_map["single"].zone_id
@@ -96,7 +96,7 @@ module "certificate" {
 module "certificate-validations" {
   source   = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.0.1"
   for_each = local.r53_map
-  tags     = var.tags
+  tags     = merge(var.tags, { Region = "us-east-1" })
 
   domain_name                               = each.value.hostname
   zone_id                                   = each.value.zone_id
@@ -108,6 +108,8 @@ module "certificate-validations" {
   providers = {
     aws = aws.us-east-1
   }
+
+  dns_ttl = var.dns_ttl
 }
 
 module "cloudfront" {
@@ -151,8 +153,9 @@ module "cloudfront" {
   }
 
   viewer_certificate = {
-    acm_certificate_arn = module.certificate.acm_certificate_arn
-    ssl_support_method  = "sni-only"
+    acm_certificate_arn      = module.certificate.acm_certificate_arn
+    ssl_support_method       = "sni-only"
+    minimum_protocol_version = "TLSv1.2_2021"
   }
 }
 
@@ -203,6 +206,21 @@ resource "aws_route53_record" "this" {
   zone_id = var.r53_zone_id
   name    = var.r53_hostname
   type    = "A"
+
+  alias {
+    zone_id = module.cloudfront.cloudfront_distribution_hosted_zone_id
+    name    = module.cloudfront.cloudfront_distribution_domain_name
+
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "ipv6" {
+  count = var.create && var.ipv6 ? 1 : 0
+
+  zone_id = var.r53_zone_id
+  name    = var.r53_hostname
+  type    = "AAAA"
 
   alias {
     zone_id = module.cloudfront.cloudfront_distribution_hosted_zone_id
