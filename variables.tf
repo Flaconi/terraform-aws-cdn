@@ -118,3 +118,15 @@ variable "validation_timeout" {
   type        = string
   default     = null
 }
+
+variable "dns_ttl" {
+  description = "dns ttl for the cert validation records"
+  type        = number
+  default     = 60
+}
+
+variable "ipv6" {
+  description = "create also alias records for ipv6"
+  type        = bool
+  default     = false
+}
