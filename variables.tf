@@ -130,3 +130,9 @@ variable "ipv6" {
   type        = bool
   default     = false
 }
+
+variable "custom_error_response" {
+  description = "One or more custom error response elements"
+  type        = any
+  default     = {}
+}

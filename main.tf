@@ -157,6 +157,8 @@ module "cloudfront" {
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.2_2021"
   }
+
+  custom_error_response = var.custom_error_response
 }
 
 data "aws_iam_policy_document" "oai_policy" {
