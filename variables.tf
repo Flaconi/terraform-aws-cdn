@@ -130,3 +130,14 @@ variable "ipv6" {
   type        = bool
   default     = false
 }
+
+variable "custom_error_response" {
+  description = "One or more custom error response elements"
+  type = list(object({
+    error_caching_min_ttl = optional(number)
+    error_code            = number
+    response_code         = optional(number)
+    response_page_path    = optional(string)
+  }))
+  default = []
+}

@@ -10,3 +10,6 @@
 
 # Terraform lockfile
 .terraform.lock.hcl
+
+# IDEA
+.idea/

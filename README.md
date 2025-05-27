@@ -7,15 +7,15 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.1 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 4.29 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.8 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5.85 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 4.29 |
-| <a name="provider_aws.us-east-1"></a> [aws.us-east-1](#provider\_aws.us-east-1) | >= 4.29 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5.85 |
+| <a name="provider_aws.us-east-1"></a> [aws.us-east-1](#provider\_aws.us-east-1) | ~> 5.85 |
 | <a name="provider_null"></a> [null](#provider\_null) | n/a |
 
 ## Modules
@@ -54,6 +54,7 @@ This module will create cdn endpoint with alias and SSL-certificate and optional
 | <a name="input_create"></a> [create](#input\_create) | Whether to create the resources | `bool` | `true` | no |
 | <a name="input_create_origin_access_control"></a> [create\_origin\_access\_control](#input\_create\_origin\_access\_control) | Controls if CloudFront origin access control should be created | `bool` | `false` | no |
 | <a name="input_create_origin_access_identity"></a> [create\_origin\_access\_identity](#input\_create\_origin\_access\_identity) | Controls if CloudFront origin access identity should be created | `bool` | `true` | no |
+| <a name="input_custom_error_response"></a> [custom\_error\_response](#input\_custom\_error\_response) | One or more custom error response elements | <pre>list(object({<br>    error_caching_min_ttl = optional(number)<br>    error_code            = number<br>    response_code         = optional(number)<br>    response_page_path    = optional(string)<br>  }))</pre> | `[]` | no |
 | <a name="input_default_root_object"></a> [default\_root\_object](#input\_default\_root\_object) | The object that you want CloudFront to return (for example, index.html) when an end user requests the root URL. | `string` | `null` | no |
 | <a name="input_dns_ttl"></a> [dns\_ttl](#input\_dns\_ttl) | dns ttl for the cert validation records | `number` | `60` | no |
 | <a name="input_ipv6"></a> [ipv6](#input\_ipv6) | create also alias records for ipv6 | `bool` | `false` | no |
