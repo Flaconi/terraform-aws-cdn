@@ -158,7 +158,7 @@ module "cloudfront" {
     minimum_protocol_version = "TLSv1.2_2021"
   }
 
-  custom_error_response = var.custom_error_response
+  custom_error_response = length(var.custom_error_response) > 0 ? var.custom_error_response : [{}]
 }
 
 data "aws_iam_policy_document" "oai_policy" {
