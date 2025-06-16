@@ -28,7 +28,18 @@ locals {
     s3_bucket = "Access identity for CDN (${var.r53_hostname})"
   } : {}
 
-  oac_key = "${var.r53_hostname}-origin-access-control"
+  # max-length for Origin Access Control is 64
+  oac_key_options = {
+    default = "${var.r53_hostname}-origin-access-control"
+    short   = "${var.r53_hostname}-oac"
+    hash    = "${md5(var.r53_hostname)}-oac"
+  }
+
+  oac_key = lookup(local.oac_key_options,
+    length(local.oac_key_options["default"]) <= 64 ? "default" :
+    length(local.oac_key_options["short"]) <= 64 ? "short" : "hash"
+    , "hash"
+  )
 
   origin_access_control = var.create_origin_access_control ? {
     (local.oac_key) = {
