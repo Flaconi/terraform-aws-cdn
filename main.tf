@@ -198,7 +198,7 @@ data "aws_iam_policy_document" "oac_policy" {
 
     condition {
       test     = "StringEquals"
-      values   = [module.cloudfront.cloudfront_distribution_arn]
+      values   = concat(var.extra_cloudfront_distributions, [module.cloudfront.cloudfront_distribution_arn])
       variable = "AWS:SourceArn"
     }
   }
