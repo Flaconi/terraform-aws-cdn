@@ -130,3 +130,13 @@ variable "ipv6" {
   type        = bool
   default     = false
 }
+
+
+variable "s3_bucket_config" {
+  description = "S3 bucket configuration"
+  type = optional(object({
+    create = optional(bool, false)
+    lifecycle_rule = optional(list(map(any)), [])
+    bucket = string
+  }))
+}

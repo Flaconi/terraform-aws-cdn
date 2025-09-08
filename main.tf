@@ -1,18 +1,3 @@
-moved {
-  from = module.certificate.aws_route53_record.validation[0]
-  to   = module.certificate-validations["single"].aws_route53_record.validation[0]
-}
-
-moved {
-  from = aws_route53_record.this
-  to   = aws_route53_record.this[0]
-}
-
-moved {
-  from = module.certificate.aws_acm_certificate_validation.this[0]
-  to   = aws_acm_certificate_validation.this
-}
-
 locals {
   origin_hostname_options = {
     use_host = var.s3_origin_hostname != "" ? var.s3_origin_hostname : null
@@ -75,6 +60,34 @@ resource "null_resource" "s3_origin_name_is_required_to_override_the_s3_origin_p
 data "aws_s3_bucket" "s3_origin" {
   count  = var.s3_origin_name != "" ? 1 : 0
   bucket = var.s3_origin_name
+}
+
+
+module "s3_origin" {
+  source = "github.com/terraform-aws-modules/terraform-aws-s3-bucket?ref=v5.6.0"
+  create = var.s3_bucket_config.create
+  bucket = var.s3_bucket_config.bucket
+  tags   = var.tags
+  acl    = "private"
+
+  lifecycle_rule = var.s3_bucket_config.lifecycle_rule
+
+  # Block public access settings
+  block_public_acls       = true
+  ignore_public_acls      = true
+  block_public_policy     = true
+  restrict_public_buckets = true
+
+  attach_deny_insecure_transport_policy = true
+
+  server_side_encryption_configuration = {
+    rule = {
+      apply_server_side_encryption_by_default = {
+        sse_algorithm     = "AES256"
+        kms_master_key_id = null
+      }
+    }
+  }
 }
 
 module "certificate" {
