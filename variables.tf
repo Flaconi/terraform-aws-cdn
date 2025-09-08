@@ -135,3 +135,9 @@ variable "s3_bucket_config" {
     object_ownership         = optional(string, "BucketOwnerPreferred")
   })
 }
+
+variable "extra_cloudfront_distributions" {
+  description = "Extra CloudFront distributions to be associated with the S3 bucket policy"
+  type        = list(string)
+  default     = []
+}
