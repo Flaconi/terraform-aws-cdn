@@ -1,15 +1,3 @@
-variable "s3_origin_hostname" {
-  description = "Hostname of S3-bucket to be used as origin"
-  type        = string
-  default     = ""
-}
-
-variable "s3_origin_name" {
-  description = "Name of S3-bucket to be used as origin"
-  type        = string
-  default     = ""
-}
-
 variable "s3_logging_hostname" {
   description = "Hostname of S3-bucket to be used for logging"
   type        = string
@@ -36,12 +24,6 @@ variable "tags" {
   description = "Map of custom tags for the provisioned resources"
   type        = map(string)
   default     = {}
-}
-
-variable "override_s3_origin_policy" {
-  description = "Overrides the S3-bucket policy to set OAI"
-  type        = bool
-  default     = false
 }
 
 variable "s3_origin_policy_restrict_access" {
@@ -140,4 +122,16 @@ variable "custom_error_response" {
     response_page_path    = optional(string)
   }))
   default = []
+}
+
+variable "s3_bucket_config" {
+  description = "S3 bucket configuration"
+  type = object({
+    create                   = optional(bool, true)
+    lifecycle_rule           = optional(any, [])
+    bucket                   = string
+    versioning               = optional(map(string), {})
+    control_object_ownership = optional(bool, false)
+    object_ownership         = optional(string, "BucketOwnerPreferred")
+  })
 }
