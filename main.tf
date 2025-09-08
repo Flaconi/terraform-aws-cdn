@@ -1,26 +1,5 @@
-moved {
-  from = module.certificate.aws_route53_record.validation[0]
-  to   = module.certificate-validations["single"].aws_route53_record.validation[0]
-}
-
-moved {
-  from = aws_route53_record.this
-  to   = aws_route53_record.this[0]
-}
-
-moved {
-  from = module.certificate.aws_acm_certificate_validation.this[0]
-  to   = aws_acm_certificate_validation.this
-}
-
 locals {
-  origin_hostname_options = {
-    use_host = var.s3_origin_hostname != "" ? var.s3_origin_hostname : null
-    use_name = var.s3_origin_name != "" ? data.aws_s3_bucket.s3_origin[0].bucket_domain_name : null
-  }
-
-  origin_hostname        = local.origin_hostname_options[var.s3_origin_name != "" ? "use_name" : "use_host"]
-  override_origin_policy = var.override_s3_origin_policy && var.s3_origin_name != "" && var.create
+  origin_hostname = module.s3_origin.s3_bucket_bucket_domain_name
 
   function_association = { for type, func in var.cf_functions : type => { function_arn = aws_cloudfront_function.functions[type].arn } if func.assign }
 
@@ -41,14 +20,14 @@ locals {
     , "hash"
   )
 
-  origin_access_control = var.create_origin_access_control ? {
+  origin_access_control = {
     (local.oac_key) = {
-      description      = "Origin access control for s3 bucket ${data.aws_s3_bucket.s3_origin[0].id}"
+      description      = "Origin access control for s3 bucket ${module.s3_origin.s3_bucket_id}"
       origin_type      = "s3"
       signing_behavior = "always"
       signing_protocol = "sigv4"
     }
-  } : {}
+  }
 
   origin_oai = var.create_origin_access_identity ? tomap({
     s3_origin = {
@@ -60,7 +39,7 @@ locals {
   }) : tomap({})
   origin_oac = var.create_origin_access_control ? tomap({
     s3_origin_oac = {
-      domain_name           = data.aws_s3_bucket.s3_origin[0].bucket_domain_name
+      domain_name           = local.origin_hostname
       origin_access_control = local.oac_key
     }
   }) : tomap({})
@@ -73,23 +52,42 @@ locals {
   }), var.additional_zones)
 }
 
-# Workaround for the input variable validation
-resource "null_resource" "either_s3_origin_hostname_or_s3_origin_name_is_required" {
-  count = !(var.s3_origin_hostname == "" && var.s3_origin_name == "") ? 0 : "Either s3_origin_hostname or s3_origin_name is required"
-}
+module "s3_origin" {
+  source        = "github.com/terraform-aws-modules/terraform-aws-s3-bucket?ref=v5.6.0"
+  create_bucket = try(var.s3_bucket_config.create, false)
+  bucket        = try(var.s3_bucket_config.bucket, null)
+  tags          = var.tags
+  acl           = "private"
 
-# Workaround for the input variable validation
-resource "null_resource" "s3_origin_name_is_required_to_override_the_s3_origin_policy" {
-  count = !(var.override_s3_origin_policy && var.s3_origin_name == "") ? 0 : "s3_origin_name is required to override the origin bucket policy"
-}
+  lifecycle_rule = try(var.s3_bucket_config.lifecycle_rule, [])
+  versioning     = try(var.s3_bucket_config.versioning, {})
 
-data "aws_s3_bucket" "s3_origin" {
-  count  = var.s3_origin_name != "" ? 1 : 0
-  bucket = var.s3_origin_name
+  # Block public access settings
+  block_public_acls       = true
+  ignore_public_acls      = true
+  block_public_policy     = true
+  restrict_public_buckets = true
+
+  attach_deny_insecure_transport_policy = true
+
+  attach_policy = true
+  policy        = var.create_origin_access_identity ? data.aws_iam_policy_document.oai_policy[0].json : data.aws_iam_policy_document.oac_policy[0].json
+
+  control_object_ownership = try(var.s3_bucket_config.control_object_ownership, false)
+  object_ownership         = try(var.s3_bucket_config.object_ownership, "BucketOwnerPreferred")
+
+  server_side_encryption_configuration = {
+    rule = {
+      apply_server_side_encryption_by_default = {
+        sse_algorithm     = "AES256"
+        kms_master_key_id = null
+      }
+    }
+  }
 }
 
 module "certificate" {
-  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.0.1"
+  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.2.0"
   tags   = merge(var.tags, { Region = "us-east-1" })
 
   domain_name               = local.r53_map["single"].hostname
@@ -105,7 +103,7 @@ module "certificate" {
 }
 
 module "certificate-validations" {
-  source   = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.0.1"
+  source   = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.2.0"
   for_each = local.r53_map
   tags     = merge(var.tags, { Region = "us-east-1" })
 
@@ -124,7 +122,7 @@ module "certificate-validations" {
 }
 
 module "cloudfront" {
-  source  = "github.com/terraform-aws-modules/terraform-aws-cloudfront?ref=v3.4.0"
+  source  = "github.com/terraform-aws-modules/terraform-aws-cloudfront?ref=v5.0.0"
   tags    = var.tags
   aliases = [for s in values(local.r53_map) : s.hostname]
 
@@ -173,11 +171,11 @@ module "cloudfront" {
 }
 
 data "aws_iam_policy_document" "oai_policy" {
-  count = local.override_origin_policy && var.create_origin_access_identity ? 1 : 0
+  count = var.create_origin_access_identity ? 1 : 0
 
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["${data.aws_s3_bucket.s3_origin[0].arn}${var.s3_origin_policy_restrict_access}"]
+    resources = ["${module.s3_origin.s3_bucket_arn}${var.s3_origin_policy_restrict_access}"]
 
     principals {
       type        = "AWS"
@@ -187,11 +185,11 @@ data "aws_iam_policy_document" "oai_policy" {
 }
 
 data "aws_iam_policy_document" "oac_policy" {
-  count = local.override_origin_policy && var.create_origin_access_control ? 1 : 0
+  count = var.create_origin_access_control ? 1 : 0
 
   statement {
     actions   = ["s3:GetObject"]
-    resources = ["${data.aws_s3_bucket.s3_origin[0].arn}${var.s3_origin_policy_restrict_access}"]
+    resources = ["${module.s3_origin.s3_bucket_arn}${var.s3_origin_policy_restrict_access}"]
 
     principals {
       type        = "Service"
@@ -204,13 +202,6 @@ data "aws_iam_policy_document" "oac_policy" {
       variable = "AWS:SourceArn"
     }
   }
-}
-
-resource "aws_s3_bucket_policy" "s3_origin_policy" {
-  count = local.override_origin_policy ? 1 : 0
-
-  bucket = data.aws_s3_bucket.s3_origin[0].id
-  policy = var.create_origin_access_identity ? data.aws_iam_policy_document.oai_policy[0].json : data.aws_iam_policy_document.oac_policy[0].json
 }
 
 resource "aws_route53_record" "this" {
@@ -269,7 +260,7 @@ resource "aws_acm_certificate_validation" "this" {
     create = var.validation_timeout
   }
 
-  provider = aws.us-east-1
+  region = "us-east-1"
 }
 
 resource "aws_cloudfront_function" "functions" {

@@ -27,3 +27,8 @@ output "cloudfront_alias_additional_zones" {
   description = "Alias hostname of CloudFront distribution for additional zones"
   value       = { for k, v in aws_route53_record.additional_records : k => v.fqdn }
 }
+
+output "s3_origin" {
+  description = "S3 origin bucket output"
+  value       = module.s3_origin
+}

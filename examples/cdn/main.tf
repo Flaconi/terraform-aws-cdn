@@ -6,9 +6,12 @@ data "aws_route53_zone" "this" {
 module "main" {
   source = "../.."
 
-  s3_origin_hostname = var.s3_origin_hostname
-  r53_zone_id        = data.aws_route53_zone.this.zone_id
-  r53_hostname       = "${var.r53_hostname}.${var.r53_hosted_zone}"
+  r53_zone_id  = data.aws_route53_zone.this.zone_id
+  r53_hostname = "${var.r53_hostname}.${var.r53_hosted_zone}"
+  s3_bucket_config = {
+    create = true
+    bucket = "cdn-bucket"
+  }
   custom_error_response = [
     {
       error_caching_min_ttl = 0
