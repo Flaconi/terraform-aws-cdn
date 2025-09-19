@@ -148,7 +148,7 @@ module "cloudfront" {
     prefix          = var.cdn_logging
   }
 
-  origin = merge(local.origin_oai, local.origin_oac)
+  origin = merge(local.origin_oai, local.origin_oac, { for k, v in var.additional_origins : k => merge(v, var.create_origin_access_control ? { origin_access_control = local.oac_key } : {}) })
   default_cache_behavior = {
     target_origin_id       = keys(merge(local.origin_oai, local.origin_oac))[0]
     viewer_protocol_policy = "redirect-to-https"
@@ -160,6 +160,8 @@ module "cloudfront" {
     function_association = local.function_association
 
   }
+
+  ordered_cache_behavior = var.ordered_cache_behavior
 
   viewer_certificate = {
     acm_certificate_arn      = module.certificate.acm_certificate_arn

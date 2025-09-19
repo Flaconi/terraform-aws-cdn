@@ -141,3 +141,15 @@ variable "extra_cloudfront_distributions" {
   type        = list(string)
   default     = []
 }
+
+variable "ordered_cache_behavior" {
+  description = "An ordered list of cache behaviors resource for this distribution. List from top to bottom in order of precedence. The topmost cache behavior will have precedence 0."
+  type        = any
+  default     = []
+}
+
+variable "additional_origins" {
+  description = "One or more additional origins for this distribution (multiples allowed)."
+  type        = any
+  default     = {}
+}
