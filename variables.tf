@@ -68,18 +68,6 @@ variable "default_root_object" {
   default     = null
 }
 
-variable "create_origin_access_identity" {
-  description = "Controls if CloudFront origin access identity should be created"
-  type        = bool
-  default     = true
-}
-
-variable "create_origin_access_control" {
-  description = "Controls if CloudFront origin access control should be created"
-  type        = bool
-  default     = false
-}
-
 variable "additional_zones" {
   description = "Map containing the Route53 Zone IDs and hostnames for additional domains"
   type = map(object({
@@ -121,7 +109,7 @@ variable "custom_error_response" {
     response_code         = optional(number)
     response_page_path    = optional(string)
   }))
-  default = []
+  default = null
 }
 
 variable "s3_bucket_config" {

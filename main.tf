@@ -1,11 +1,9 @@
+
+
 locals {
   origin_hostname = module.s3_origin.s3_bucket_bucket_domain_name
 
   function_association = { for type, func in var.cf_functions : type => { function_arn = aws_cloudfront_function.functions[type].arn } if func.assign }
-
-  origin_access_identities = var.create_origin_access_identity ? {
-    s3_bucket = "Access identity for CDN (${var.r53_hostname})"
-  } : {}
 
   # max-length for Origin Access Control is 64
   oac_key_options = {
@@ -29,20 +27,12 @@ locals {
     }
   }
 
-  origin_oai = var.create_origin_access_identity ? tomap({
-    s3_origin = {
-      domain_name = local.origin_hostname
-      s3_origin_config = {
-        origin_access_identity = "s3_bucket"
-      }
-    }
-  }) : tomap({})
-  origin_oac = var.create_origin_access_control ? tomap({
+  origin_oac = tomap({
     s3_origin_oac = {
       domain_name           = local.origin_hostname
       origin_access_control = local.oac_key
     }
-  }) : tomap({})
+  })
 
   r53_map = merge(tomap({
     single = {
@@ -53,7 +43,7 @@ locals {
 }
 
 module "s3_origin" {
-  source        = "github.com/terraform-aws-modules/terraform-aws-s3-bucket?ref=v5.6.0"
+  source        = "github.com/terraform-aws-modules/terraform-aws-s3-bucket?ref=v5.9.0"
   create_bucket = try(var.s3_bucket_config.create, false)
   bucket        = try(var.s3_bucket_config.bucket, null)
   tags          = var.tags
@@ -71,7 +61,7 @@ module "s3_origin" {
   attach_deny_insecure_transport_policy = true
 
   attach_policy = true
-  policy        = var.create_origin_access_identity ? data.aws_iam_policy_document.oai_policy[0].json : data.aws_iam_policy_document.oac_policy[0].json
+  policy        = data.aws_iam_policy_document.oac_policy.json
 
   control_object_ownership = try(var.s3_bucket_config.control_object_ownership, false)
   object_ownership         = try(var.s3_bucket_config.object_ownership, "BucketOwnerPreferred")
@@ -87,7 +77,7 @@ module "s3_origin" {
 }
 
 module "certificate" {
-  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.2.0"
+  source = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v6.2.0"
   tags   = merge(var.tags, { Region = "us-east-1" })
 
   domain_name               = local.r53_map["single"].hostname
@@ -103,7 +93,7 @@ module "certificate" {
 }
 
 module "certificate-validations" {
-  source   = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v5.2.0"
+  source   = "github.com/terraform-aws-modules/terraform-aws-acm?ref=v6.2.0"
   for_each = local.r53_map
   tags     = merge(var.tags, { Region = "us-east-1" })
 
@@ -122,7 +112,7 @@ module "certificate-validations" {
 }
 
 module "cloudfront" {
-  source  = "github.com/terraform-aws-modules/terraform-aws-cloudfront?ref=v5.0.0"
+  source  = "github.com/terraform-aws-modules/terraform-aws-cloudfront?ref=v6.0.2"
   tags    = var.tags
   aliases = [for s in values(local.r53_map) : s.hostname]
 
@@ -132,14 +122,10 @@ module "cloudfront" {
   retain_on_delete    = false
   wait_for_deployment = false
 
-  create_distribution = var.create
+  create = var.create
 
   default_root_object = var.default_root_object
 
-  create_origin_access_identity = var.create_origin_access_identity
-  origin_access_identities      = local.origin_access_identities
-
-  create_origin_access_control = var.create_origin_access_control
   origin_access_control        = local.origin_access_control
 
   logging_config = var.s3_logging_hostname == "" ? {} : {
@@ -148,9 +134,9 @@ module "cloudfront" {
     prefix          = var.cdn_logging
   }
 
-  origin = merge(local.origin_oai, local.origin_oac, { for k, v in var.additional_origins : k => merge(v, var.create_origin_access_control ? { origin_access_control = local.oac_key } : {}) })
+  origin = merge(local.origin_oac, { for k, v in var.additional_origins : k => merge(v, { origin_access_control = local.oac_key }) })
   default_cache_behavior = {
-    target_origin_id       = keys(merge(local.origin_oai, local.origin_oac))[0]
+    target_origin_id       = keys(local.origin_oac)[0]
     viewer_protocol_policy = "redirect-to-https"
 
     allowed_methods      = ["GET", "HEAD", "OPTIONS"]
@@ -169,26 +155,10 @@ module "cloudfront" {
     minimum_protocol_version = "TLSv1.2_2021"
   }
 
-  custom_error_response = length(var.custom_error_response) > 0 ? var.custom_error_response : [{}]
-}
-
-data "aws_iam_policy_document" "oai_policy" {
-  count = var.create_origin_access_identity ? 1 : 0
-
-  statement {
-    actions   = ["s3:GetObject"]
-    resources = ["${module.s3_origin.s3_bucket_arn}${var.s3_origin_policy_restrict_access}"]
-
-    principals {
-      type        = "AWS"
-      identifiers = [element(module.cloudfront.cloudfront_origin_access_identity_iam_arns, 0)]
-    }
-  }
+  custom_error_response = var.custom_error_response
 }
 
 data "aws_iam_policy_document" "oac_policy" {
-  count = var.create_origin_access_control ? 1 : 0
-
   statement {
     actions   = ["s3:GetObject"]
     resources = ["${module.s3_origin.s3_bucket_arn}${var.s3_origin_policy_restrict_access}"]
