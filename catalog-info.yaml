@@ -1,0 +1,20 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: terraform-aws-cdn
+  description: >
+    Module to create set of CloudFront distributions
+  annotations:
+    github.com/project-slug: Flaconi/terraform-aws-cdn
+  tags:
+    - terraform
+    - aws
+    - cloudfront
+    - cdn
+
+spec:
+  type: library
+  lifecycle: production
+  owner: group:platform
+  system: aws-infrastructure
+  providesApis: []
